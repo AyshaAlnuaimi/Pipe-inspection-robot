@@ -17,8 +17,8 @@ while True:
 
     # Example processing: just show it
     cv2.imshow("Original Stream", frame)
-    cv2.imshow("grayscale", gray)
-    cv2.imshow("Canny Edges", edges)
+    #cv2.imshow("grayscale", gray)
+    #cv2.imshow("Canny Edges", edges)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
