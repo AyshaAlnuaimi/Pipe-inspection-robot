@@ -6,7 +6,7 @@ from PIL import Image, ImageTk  # <-- Import Pillow
 root = tk.Tk()
 root.title("Noise Reduction Techniques")
 
-image_path = r"C:\Users\Aysha.Alnuaimi\Downloads\inpipe_image.jpg"
+image_path = r"C:\Users\User\Desktop\screenshot_video_streaming.png"
 
 # Load JPG image using PIL
 pil_image = Image.open(image_path)
