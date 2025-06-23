@@ -1,10 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import threading
-
-
-# main.py
-
 from median_fltr_class import MedianFilterApp
 from bilateral_fltr_class import BilateralFilterApp
 from gaussian_fltr import GaussianFilterApp
@@ -29,6 +25,7 @@ class NoiseReductionApp:
         tk.Button(self.root, text="Gaussian Filtering", command=self.gaussian_filtering).pack(pady=5)
         tk.Button(self.root, text="Wavelet Denoising", command=self.wavelet_denoising).pack(pady=5)
         tk.Button(self.root, text="Non-Local Means Denoising", command=self.nlm_denoising).pack(pady=5)
+        tk.Button(self.root, text="Next").pack(pady=5)
 
     def show_image_window(self, title="Filtered Image"):
         window = tk.Toplevel(self.root)

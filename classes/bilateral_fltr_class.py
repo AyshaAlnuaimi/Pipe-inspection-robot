@@ -51,5 +51,8 @@ class BilateralFilterApp:
         cv2.imshow(self.window, filtered)
 
     def run(self):
-        cv2.waitKey(0)
+        while True:
+            key = cv2.waitKey(1) & 0xFF
+            if key == 27:  # ESC key to exit
+                break
         cv2.destroyAllWindows()
