@@ -1,14 +1,13 @@
 # I got the code for the trackbar from this youtube link
 # https://www.youtube.com/watch?v=lCKvzUKhcJo&t=7s
 # https://github.com/nickredsox/youtube/blob/master/DIP_CV/trackbar/trackbar.py
-
 import cv2
 import numpy as np
 
 class BilateralFilterApp:
     def __init__(self, image_path):
         self.image_path = image_path
-        self.display_window = "Live Stream / Image"  # Use existing main window
+        self.display_window = "Live Stream"
         self.trackbar_window = "Trackbars"
 
         self.d = 5
@@ -19,13 +18,12 @@ class BilateralFilterApp:
         self.max_sigmaSpace = 200
 
         self.filtered_image = None
+        self.save_filter = False  # ✅ Important!
         self.original_img = cv2.imread(self.image_path)
-        print("Image shape:", self.original_img.shape)
 
         self.setup_window()
 
     def setup_window(self):
-        # Create only trackbar window
         cv2.namedWindow(self.trackbar_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.trackbar_window, 400, 120)
 
@@ -36,27 +34,33 @@ class BilateralFilterApp:
         self.on_trackbar(None)
 
     def on_trackbar(self, val):
-        self.d = cv2.getTrackbarPos("d", self.trackbar_window)
+        self.d = max(1, cv2.getTrackbarPos("d", self.trackbar_window))
         self.sigmaColor = cv2.getTrackbarPos("sigmaColor", self.trackbar_window)
         self.sigmaSpace = cv2.getTrackbarPos("sigmaSpace", self.trackbar_window)
 
-        if self.d < 1:
-            self.d = 1
-
-        self.filtered_image = cv2.bilateralFilter(self.original_img, self.d, self.sigmaColor, self.sigmaSpace)
+        self.filtered_image = cv2.bilateralFilter(
+            self.original_img, self.d, self.sigmaColor, self.sigmaSpace
+        )
 
         cv2.imshow(self.display_window, self.filtered_image)
 
     def run(self):
-        print("Press 's' to save, or 'i' to ignore changes.")
+        print("[INFO] Press 's' to save, or 'i' to ignore changes.")
         while True:
-            key = cv2.waitKey(1) & 0xFF
+            key = cv2.waitKey(100) & 0xFF
             if key == ord('s'):
-                print("Filtered image saved.")
+                self.save_filter = True
+                print(f"[INFO] Bilateral filter saved (d={self.d}, sigmaColor={self.sigmaColor}, sigmaSpace={self.sigmaSpace})")
                 break
             elif key == ord('i'):
-                print("Changes ignored.")
+                self.save_filter = False
                 self.filtered_image = None
+                print("[INFO] Bilateral filter ignored.")
                 break
-        cv2.destroyWindow(self.trackbar_window)
+            if cv2.getWindowProperty(self.trackbar_window, cv2.WND_PROP_VISIBLE) < 1:
+                self.save_filter = False
+                self.filtered_image = None
+                print("[INFO] Trackbar window closed. Filter ignored.")
+                break
 
+        cv2.destroyWindow(self.trackbar_window)

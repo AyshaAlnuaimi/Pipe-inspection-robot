@@ -1,39 +1,33 @@
-
-# I got the code for the trackbar from this youtube link
-# https://www.youtube.com/watch?v=lCKvzUKhcJo&t=7s
-# https://github.com/nickredsox/youtube/blob/master/DIP_CV/trackbar/trackbar.py
-
-
 import cv2
 import numpy as np
 
 class GaussianFilterApp:
     def __init__(self, image_path):
         self.image_path = image_path
-        self.display_window = "Live Stream / Image"  # Reuse main image window
+        self.display_window = "Live Stream"
         self.trackbar_window = "Trackbars"
 
-        self.gaussian_filtering_ksize = 5
+        self.ksize = 5
         self.sigmaX = 1.5
-        self.init_done = False
+        self.max_ksize = 31
+        self.max_sigma = 100
+
         self.filtered_image = None
-
+        self.save_filter = False  # ✅ New flag
         self.original_img = cv2.imread(self.image_path)
-        print("Image shape:", self.original_img.shape)
 
+        self.init_done = False
         self.setup_window()
 
     def setup_window(self):
-        # Only setup trackbars (image already displayed in main)
         cv2.namedWindow(self.trackbar_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.trackbar_window, 400, 100)
-        cv2.createTrackbar("ksize", self.trackbar_window, self.gaussian_filtering_ksize, 31, self.gaussian_filtering)
-        cv2.createTrackbar("sigmaX", self.trackbar_window, int(self.sigmaX * 10), 100, self.gaussian_filtering)
-
+        cv2.createTrackbar("ksize", self.trackbar_window, self.ksize, self.max_ksize, self.update_filter)
+        cv2.createTrackbar("sigmaX", self.trackbar_window, int(self.sigmaX * 10), self.max_sigma, self.update_filter)
         self.init_done = True
-        self.gaussian_filtering()
+        self.update_filter()
 
-    def gaussian_filtering(self, val=None):
+    def update_filter(self, val=None):
         if not self.init_done:
             return
 
@@ -42,28 +36,34 @@ class GaussianFilterApp:
             k += 1
         if k < 1:
             k = 1
-        self.gaussian_filtering_ksize = k
+        self.ksize = k
 
         sigma = cv2.getTrackbarPos("sigmaX", self.trackbar_window)
         self.sigmaX = sigma / 10.0
 
         self.filtered_image = cv2.GaussianBlur(
             self.original_img,
-            (self.gaussian_filtering_ksize, self.gaussian_filtering_ksize),
+            (self.ksize, self.ksize),
             self.sigmaX
         )
-        cv2.imshow(self.display_window, self.filtered_image)  # Update main window
+        cv2.imshow(self.display_window, self.filtered_image)
 
     def run(self):
-        print("Press 's' to save, or 'q' to quit without saving.")
+        print("[INFO] Press 's' to save, or 'i' to ignore.")
         while True:
-            key = cv2.waitKey(1) & 0xFF
+            key = cv2.waitKey(100) & 0xFF
             if key == ord('s'):
-                if self.filtered_image is not None:
-                    print("Filtered image saved.")
+                self.save_filter = True
+                print(f"[INFO] Saved Gaussian filter with ksize={self.ksize}, sigmaX={self.sigmaX}")
                 break
-            elif key == ord('q'):
+            elif key == ord('i'):
                 self.filtered_image = None
-                print("Exiting without saving.")
+                self.save_filter = False
+                print("[INFO] Ignored Gaussian filter.")
                 break
-        cv2.destroyWindow(self.trackbar_window)  # Only close the control window
+            if cv2.getWindowProperty(self.trackbar_window, cv2.WND_PROP_VISIBLE) < 1:
+                print("[INFO] Window closed. Ignoring filter.")
+                self.filtered_image = None
+                self.save_filter = False
+                break
+        cv2.destroyWindow(self.trackbar_window)

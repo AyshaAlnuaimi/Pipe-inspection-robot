@@ -1,0 +1,115 @@
+import tkinter as tk
+from PIL import Image, ImageTk
+import cv2
+
+from det_Canny_edge import CannyEdgeDetector
+from vid_median_fltr import MedianFilterApp
+
+class NoiseReductionApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Noise Reduction Techniques")
+        # # Uncomment the next line to use live video stream instead of an image
+        self.cap = cv2.VideoCapture("http://192.168.3.5:8000/video")
+
+        #for image
+        self.original_image_path = r"C:\Users\User\Desktop\newScreenshot.png"
+        self.processed_image_path = None
+        self.current_image_path = self.cap
+
+        self.pil_image = Image.open(self.original_image_path)
+        self.image = ImageTk.PhotoImage(self.pil_image)
+
+        # Always show the original/processed image
+        cv2.imshow("Live Stream / Image", cv2.imread(self.current_image_path))
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.clear_root()
+        tk.Label(self.root, text="Choose Technique for Noise Reduction (Optional):").pack(pady=10)
+        tk.Button(self.root, text="Median Filtering", command=self.median_filtering).pack(pady=5)
+        tk.Button(self.root, text="Bilateral Filtering").pack(pady=5)
+        tk.Button(self.root, text="Gaussian Filtering").pack(pady=5)
+        tk.Button(self.root, text="Non-Local Means Denoising").pack(pady=5)
+        tk.Button(self.root, text="Reset to Original", command=self.reset_image).pack(pady=5)
+        tk.Button(self.root, text="Skip", command=self.go_to_image_detection).pack(pady=5)
+
+    def clear_root(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+    def save_processed_image(self, image):
+        path = "processed_image.png"
+        cv2.imwrite(path, image)
+        self.processed_image_path = path
+        self.current_image_path = path
+        print(f"Processed image saved to {path}")
+        cv2.imshow("Live Stream / Image", image)  # Update displayed image
+
+    def reset_image(self):
+        self.current_image_path = self.original_image_path
+        self.pil_image = Image.open(self.original_image_path)
+        self.image = ImageTk.PhotoImage(self.pil_image)
+        print("[INFO] Reset to original image.")
+        cv2.imshow("Live Stream / Image", cv2.imread(self.original_image_path))
+
+
+    def median_filtering(self):
+        print("Launching Median Filter App")
+        app = MedianFilterApp(self.current_image_path)
+        app.run()
+        if hasattr(app, 'filtered_image') and app.filtered_image is not None:
+            self.save_processed_image(app.filtered_image)
+
+
+    def canny_detection(self):
+        self.capture_current_frame()  # Ensure latest frame is saved
+        print("Running Canny edge detector")
+        app = CannyEdgeDetector(self.current_image_path)
+        app.run()
+
+        if app.back_requested:
+            # Restore previous image
+            cv2.imshow("Live Stream / Image", cv2.imread(self.current_image_path))
+            self.setup_ui()  # Go back to noise reduction options
+        else:
+            # Stay in detection screen or take other action
+            print("[INFO] Canny completed.")
+
+
+    def go_to_image_detection(self):
+        self.clear_root()
+        tk.Label(self.root, text="Choose Technique for Image Detection:").pack(pady=10)
+        tk.Button(self.root, text="Canny edge detector", command=self.canny_detection, width=30).pack(pady=5)
+        tk.Button(self.root, text="Back", command=self.setup_ui, width=30).pack(pady=10)
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = NoiseReductionApp(root)
+    root.mainloop()
+
+    
+    
+   # def bilateral_filtering(self):
+        #     print("Bilateral Filtering")
+        #     app = BilateralFilterApp(self.current_image_path)
+        #     app.run()
+        #     if hasattr(app, 'filtered_image') and app.filtered_image is not None:
+        #         self.save_processed_image(app.filtered_image)
+
+        # def gaussian_filtering(self):
+        #     print("Gaussian Filtering")
+        #     app = GaussianFilterApp(self.current_image_path)
+        #     app.run()
+        #     if hasattr(app, 'filtered_image') and app.filtered_image is not None:
+        #         self.save_processed_image(app.filtered_image)
+
+        # def nlm_denoising(self):
+        #     print("Non-Local Means Denoising")
+        #     app = NonLocalMeansFilterApp(self.current_image_path)
+        #     app.run()
+        #     if hasattr(app, 'filtered_image') and app.filtered_image is not None:
+        #         self.save_processed_image(app.filtered_image)
+

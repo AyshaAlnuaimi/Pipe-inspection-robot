@@ -4,20 +4,20 @@ import numpy as np
 class MedianFilterApp:
     def __init__(self, image_path):
         self.image_path = image_path
-        self.display_window = "Live Stream / Image"  # Reuse the main window
+        self.display_window = "Live Stream"
         self.trackbar_window = "Trackbars"
         self.ksize = 5
         self.max_ksize = 31
         self.filtered_image = None
         self.original_img = cv2.imread(self.image_path)
-        print("Image shape:", self.original_img.shape)
+        self.save_filter = False  # <== New flag
         self.setup_window()
 
     def setup_window(self):
-        # Do NOT create a new image window — reuse the existing one
         cv2.namedWindow(self.trackbar_window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.trackbar_window, 400, 100)
         cv2.createTrackbar("ksize", self.trackbar_window, self.ksize, self.max_ksize, self.median_filtering)
+        self.median_filtering(self.ksize)
 
     def median_filtering(self, val):
         k = cv2.getTrackbarPos("ksize", self.trackbar_window)
@@ -26,19 +26,25 @@ class MedianFilterApp:
         if k < 1:
             k = 1
         self.ksize = k
-        self.filtered_image = cv2.medianBlur(self.original_img, self.ksize)
-        cv2.imshow(self.display_window, self.filtered_image)  # Update same image window
+        self.filtered_image = cv2.medianBlur(self.original_img, k)
+        cv2.imshow(self.display_window, self.filtered_image)
 
     def run(self):
-        print("Press 's' to save, or 'q' to quit without saving.")
+        print("[INFO] Press 's' to save, or 'i' to ignore the filter.")
         while True:
-            key = cv2.waitKey(1) & 0xFF
+            key = cv2.waitKey(100) & 0xFF
             if key == ord('s'):
-                if self.filtered_image is not None:
-                    print("Filtered image saved.")
+                print(f"[INFO] Filter saved with ksize={self.ksize}")
+                self.save_filter = True
                 break
-            elif key == ord('q'):
+            elif key == ord('i'):
+                print("[INFO] Filter ignored.")
                 self.filtered_image = None
-                print("Exiting without saving.")
+                self.save_filter = False
                 break
-        cv2.destroyWindow(self.trackbar_window)  # Only close the trackbar window
+            if cv2.getWindowProperty(self.trackbar_window, cv2.WND_PROP_VISIBLE) < 1:
+                print("[INFO] Window closed without choice. Ignoring.")
+                self.filtered_image = None
+                self.save_filter = False
+                break
+        cv2.destroyWindow(self.trackbar_window)

@@ -11,7 +11,6 @@ while True:
     # Convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
-    
     # Apply Canny Edge Detection
     edges = cv2.Canny(frame, threshold1=50, threshold2=150)
 
