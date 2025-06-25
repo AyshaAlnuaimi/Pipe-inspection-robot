@@ -193,29 +193,29 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray_eq = cv2.equalizeHist(gray)
 
-    # ----------- Window 1: Sigma Variation with Canny -----------
-    processed_sigma = []
+    # # ----------- Window 1: Sigma Variation with Canny -----------
+    # processed_sigma = []
 
-    for sigma in sigma_values:
-        ksize = int(6 * sigma + 1)
-        if ksize % 2 == 0:
-            ksize += 1
+    # for sigma in sigma_values:
+    #     ksize = int(6 * sigma + 1)
+    #     if ksize % 2 == 0:
+    #         ksize += 1
 
-        blur = cv2.GaussianBlur(gray_eq, (ksize, ksize), sigma)
-        edges = cv2.Canny(blur, 20, 60)
-        edges_dilated = cv2.dilate(edges, np.ones((2, 2), np.uint8), iterations=1)
+    #     blur = cv2.GaussianBlur(gray_eq, (ksize, ksize), sigma)
+    #     edges = cv2.Canny(blur, 20, 60)
+    #     edges_dilated = cv2.dilate(edges, np.ones((2, 2), np.uint8), iterations=1)
 
-        label = f"σ = {sigma}"
-        labeled = cv2.putText(cv2.cvtColor(edges_dilated, cv2.COLOR_GRAY2BGR),
-                              label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        processed_sigma.append(resize(labeled))
+    #     label = f"σ = {sigma}"
+    #     labeled = cv2.putText(cv2.cvtColor(edges_dilated, cv2.COLOR_GRAY2BGR),
+    #                           label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+    #     processed_sigma.append(resize(labeled))
 
-    row1 = np.hstack(processed_sigma[:3])
-    row2 = np.hstack(processed_sigma[3:])
-    if len(processed_sigma[3:]) < 3:
-        for _ in range(3 - len(processed_sigma[3:])):
-            row2 = np.hstack([row2, np.zeros_like(processed_sigma[0])])
-    grid_sigma = np.vstack([row1, row2])
+    # row1 = np.hstack(processed_sigma[:3])
+    # row2 = np.hstack(processed_sigma[3:])
+    # if len(processed_sigma[3:]) < 3:
+    #     for _ in range(3 - len(processed_sigma[3:])):
+    #         row2 = np.hstack([row2, np.zeros_like(processed_sigma[0])])
+    # grid_sigma = np.vstack([row1, row2])
 
     # ----------- Window 2: Feature Detectors -----------
     feature_images = []
@@ -275,7 +275,7 @@ while True:
     grid_features = np.vstack([feat_row1, feat_row2])
 
     # ----------- Display Both Windows -----------
-    cv2.imshow("video streaming Sigma: " + str(sigma_values), grid_sigma)
+    # cv2.imshow("video streaming Sigma: " + str(sigma_values), grid_sigma)
     cv2.imshow("Feature Comparison: Canny, Sobel, LoG, SIFT, Harris, SURF", grid_features)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):

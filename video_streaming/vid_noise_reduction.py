@@ -226,7 +226,7 @@ class NoiseReductionApp:
         tk.Button(self.root, text="Apply Gaussian Filter", command=self.apply_gaussian_filter).pack(pady=5)
         tk.Button(self.root, text="Apply Bilateral Filter", command=self.apply_bilateral_filter).pack(pady=5)
         tk.Button(self.root, text="Reset to Original", command=self.reset_image).pack(pady=5)
-        tk.Button(self.root, text="Skip", command=self.skip_processing).pack(pady=5)
+        tk.Button(self.root, text="Apply canny edge", command=self.skip_processing).pack(pady=5)
 
     def clear_root(self):
         for widget in self.root.winfo_children():
