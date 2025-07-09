@@ -67,7 +67,6 @@ class GUI:
         tk.Button(self.main_menu, text="Start", command=self.logic.extract_images_from_stream).pack()
         tk.Button(self.main_menu, text="Back", command=self.edge_detection_menu).pack()
         
-        
-
+    
 # Run the app
 GUI()

@@ -1,7 +1,6 @@
 import tkinter as tk
 import cv2
 import os
-import numpy
 
     
 from det_Canny_edge import CannyEdgeDetector
@@ -30,6 +29,9 @@ class NoiseReductionApp:
         self.canny_detector = None
         
         self.enable_screenshot = False
+        self.screenshot_count = 0
+        self.total_screenshots_to_save = 20
+
 
 
         # External dependencies (to be set later)
@@ -68,21 +70,20 @@ class NoiseReductionApp:
                 processed = self.canny_detector.apply(processed)
                 processed = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
             
-            if self.enable_screenshot:
+            if self.enable_screenshot and self.screenshot_count < self.total_screenshots_to_save:
                 SAVE_DIR = r"C:\Users\User\Desktop\extract_images_from_vid_streaming"
                 os.makedirs(SAVE_DIR, exist_ok=True)
 
-                saved_count = 0
-                total_to_save = 20
+                filename = os.path.join(SAVE_DIR, f"frame_{self.screenshot_count:04d}.png")
+                cv2.imwrite(filename, processed)
+                self.screenshot_count += 1
+                cv2.waitKey(1000) 
 
-                while saved_count < total_to_save:
-                    filename = os.path.join(SAVE_DIR, f"frame_{saved_count:04d}.png")
-                    cv2.imwrite(filename, processed)
-                    saved_count += 1
-                    cv2.waitKey(100)  # wait a bit between saves (100 ms)
-                enable_screenshot = False
-        
+                if self.screenshot_count >= self.total_screenshots_to_save:
+                    self.enable_screenshot = False
+                    print(" Done saving 20 screenshots.")
 
+            
             self.current_frame = frame                # raw video frame
             self.filtered_frame = processed           # final processed frame
 
