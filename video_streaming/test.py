@@ -5,71 +5,10 @@ from vid_median_fltr import MedianFilterApp
 from vid_gaussian_fltr import GaussianFilterApp
 from vid_bilateral_fltr import BilateralFilterApp
 
-class GUI:
-
-    def __init__(self):
-        self.main_menu = tk.Tk()
-        self.main_menu.minsize(300, 150)
-        self.main_menu.title("Computer Vision")
-        # Set up video capture
-        self.cap = None
-        # cv2.VideoCapture("http://192.168.3.5:8000/video")
-        self.current_frame = None
-        self.current_image_path = "captured_frame.png"
-        self.original_image_path = "original_frame.png"
-
-        # Create one instance of NoiseReductionApp
-        self.logic = NoiseReductionApp()
-        self.logic.cap = self.cap  # share video stream with logic
-        self.logic.root = self.main_menu  # allow logic to manipulate the GUI
-        self.logic.current_image_path = self.current_image_path
-        self.logic.original_image_path = self.original_image_path
-
-        # Start video streaming (if desired)
-        self.logic.show_video_stream()
-  
-        # Launch the filter selection menu
-        self.filter_menu()
-
-        self.main_menu.mainloop()
-
-
-    def clear_main_menu(self):
-        for widget in self.main_menu.winfo_children():
-            widget.destroy()
-
-    def filter_menu(self):
-        self.clear_main_menu()
-        tk.Label(self.main_menu, text="Choose one Noise reduction Technique").pack()
-
-        tk.Button(self.main_menu, text="Media filter").pack()
-        tk.Button(self.main_menu, text="Bilateral filter",  command=self.logic.apply_median_filter).pack()
-        tk.Button(self.main_menu, text="Gaussian filter",  command=self.logic.apply_gaussian_filter).pack()
-        tk.Button(self.main_menu, text="Reset image",  command=self.logic.reset_image).pack()
-        tk.Button(self.main_menu, text="Next", command=self.edge_detection_menu).pack()
-
-    def edge_detection_menu(self):
-        self.clear_main_menu()
-        tk.Label(self.main_menu, text="Choose one Edge detection").pack()
-
-        # tk.Button(self.main_menu, text="Canny edge detection", command=self.logic.apply_canny_edge).pack()
-        tk.Button(self.main_menu, text="Canny edge detection").pack()
-        tk.Button(self.main_menu, text="Laplacian edge detection").pack()
-        tk.Button(self.main_menu, text="Sobel edge detection").pack()
-        tk.Button(self.main_menu, text="Back", command=self.filter_menu).pack()
-        tk.Button(self.main_menu, text="Next", command=self.failure_detection).pack()
-
-    def failure_detection(self):
-        self.clear_main_menu()
-        tk.Label(self.main_menu, text="Failure detection running...").pack()
-        tk.Button(self.main_menu, text="Back", command=self.edge_detection_menu).pack()
-
-# Run the app
-GUI()
-
 
 class NoiseReductionApp:
-    def __init__(self):
+    def __init__(self, root):
+        self.root = root
         #noise reduction flags
         self.apply_median = False
         self.median_ksize = 5
@@ -145,7 +84,7 @@ class NoiseReductionApp:
     def apply_gaussian_filter(self):
         self.capture_current_frame()
         app = GaussianFilterApp(self.current_image_path)
-        # app.run()
+        app.run()
         if app.save_filter and app.filtered_image is not None:
             cv2.imwrite(self.current_image_path, app.filtered_image)
             self.apply_gaussian = True
@@ -175,3 +114,68 @@ class NoiseReductionApp:
     #     print("[INFO] Skipping noise reduction. Enabling Canny Edge Detection...")
     #     self.apply_canny = True
     #     self.canny_detector = CannyEdgeDetector()
+    
+    
+    
+    
+class GUI:
+
+    def __init__(self):
+        self.main_menu = tk.Tk()
+        self.main_menu.minsize(300, 150)
+        self.main_menu.title("Computer Vision")
+        # Set up video capture
+        self.cap = None
+        self.cap = cv2.VideoCapture("http://192.168.3.5:8000/video")
+        self.current_frame = None
+        self.current_image_path = "captured_frame.png"
+        self.original_image_path = "original_frame.png"
+
+        # Create one instance of NoiseReductionApp
+        self.logic = NoiseReductionApp(self.main_menu)
+        self.logic.cap = self.cap  # share video stream with logic
+        self.logic.root = self.main_menu  # allow logic to manipulate the GUI
+        self.logic.current_image_path = self.current_image_path
+        self.logic.original_image_path = self.original_image_path
+
+        # Start video streaming (if desired)
+        self.logic.show_video_stream()
+  
+        # Launch the filter selection menu
+        self.filter_menu()
+
+        self.main_menu.mainloop()
+
+
+    def clear_main_menu(self):
+        for widget in self.main_menu.winfo_children():
+            widget.destroy()
+
+    def filter_menu(self):
+        self.clear_main_menu()
+        tk.Label(self.main_menu, text="Choose one Noise reduction Technique").pack()        
+
+        tk.Button(self.main_menu, text="Median filter", command=self.logic.apply_median_filter).pack()
+        tk.Button(self.main_menu, text="Bilateral filter",  command=self.logic.apply_bilateral_filter).pack()
+        tk.Button(self.main_menu, text="Gaussian filter",  command=self.logic.apply_gaussian_filter).pack()
+        tk.Button(self.main_menu, text="Reset image",  command=self.logic.reset_image).pack()
+        tk.Button(self.main_menu, text="Next", command=self.edge_detection_menu).pack()
+
+    def edge_detection_menu(self):
+        self.clear_main_menu()
+        tk.Label(self.main_menu, text="Choose one Edge detection").pack()
+
+        # tk.Button(self.main_menu, text="Canny edge detection", command=self.logic.apply_canny_edge).pack()
+        tk.Button(self.main_menu, text="Canny edge detection").pack()
+        tk.Button(self.main_menu, text="Laplacian edge detection").pack()
+        tk.Button(self.main_menu, text="Sobel edge detection").pack()
+        tk.Button(self.main_menu, text="Back", command=self.filter_menu).pack()
+        tk.Button(self.main_menu, text="Next", command=self.failure_detection).pack()
+
+    def failure_detection(self):
+        self.clear_main_menu()
+        tk.Label(self.main_menu, text="Failure detection running...").pack()
+        tk.Button(self.main_menu, text="Back", command=self.edge_detection_menu).pack()
+
+# Run the app
+GUI()
