@@ -35,6 +35,9 @@ while True:
     orb = cv2.ORB_create(nfeatures=1500)
     keypoints, descriptors = orb.detectAndCompute(closing, None)
     featuredImg = cv2.drawKeypoints(closing, keypoints, None)
+    
+    
+    
 
     # Display windows
     cv2.imshow("Original", frame)

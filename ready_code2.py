@@ -1,8 +1,11 @@
 import cv2 as cv
 import numpy as np
 
+# https://stackoverflow.com/questions/67865452/the-problem-of-using-opencv-to-do-crack-detection
+
+
 # Load the Canny edge image (single channel)
-src = cv.imread("screenshot_video_streaming.png", cv.IMREAD_GRAYSCALE)
+src = cv.imread("frame_0000.png", cv.IMREAD_GRAYSCALE)
 
 # Optional: convert to color for visualization
 vis = cv.cvtColor(src, cv.COLOR_GRAY2BGR)

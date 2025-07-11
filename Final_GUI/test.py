@@ -63,8 +63,9 @@ class GUI:
 
     def take_screenshot(self):
         self.clear_main_menu()
-        tk.Label(self.main_menu, text="Press start to start taking photos").pack()
-        tk.Button(self.main_menu, text="Start", command=self.logic.extract_images_from_stream).pack()
+        #tk.Label(self.main_menu, text="Press start to start taking photos").pack()
+        #tk.Button(self.main_menu, text="Start", command=self.logic.extract_images_from_stream).pack()
+        tk.Button(self.main_menu, text="Start", command=self.logic.apply_failure_detection).pack()
         tk.Button(self.main_menu, text="Back", command=self.edge_detection_menu).pack()
         
     

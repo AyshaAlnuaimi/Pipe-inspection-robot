@@ -1,3 +1,6 @@
+
+# https://github.com/shomnathsomu/crack-detection-opencv/blob/master/CrackDetection.py 
+
 # importing necessary libraries
 import numpy as np
 import cv2

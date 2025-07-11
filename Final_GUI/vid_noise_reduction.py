@@ -1,6 +1,7 @@
 import tkinter as tk
 import cv2
 import os
+import numpy as np
 
     
 from det_Canny_edge import CannyEdgeDetector
@@ -31,8 +32,8 @@ class NoiseReductionApp:
         self.enable_screenshot = False
         self.screenshot_count = 0
         self.total_screenshots_to_save = 20
-
-
+        
+        self.failure_detection_flag = False
 
         # External dependencies (to be set later)
         self.cap = None
@@ -67,8 +68,11 @@ class NoiseReductionApp:
 
             # Apply Canny edge if enabled
             if self.apply_canny and self.canny_detector is not None:
-                processed = self.canny_detector.apply(processed)
-                processed = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
+                self.gray_edges = self.canny_detector.apply(processed)  # ← grayscale image
+                processed = cv2.cvtColor(self.gray_edges, cv2.COLOR_GRAY2BGR)
+
+                # processed = self.canny_detector.apply(processed)
+                # processed = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
             
             if self.enable_screenshot and self.screenshot_count < self.total_screenshots_to_save:
                 SAVE_DIR = r"C:\Users\User\Desktop\extract_images_from_vid_streaming"
@@ -82,7 +86,49 @@ class NoiseReductionApp:
                 if self.screenshot_count >= self.total_screenshots_to_save:
                     self.enable_screenshot = False
                     print(" Done saving 20 screenshots.")
+            
+            
+            #-------------------------------------------------------------------        
+            # if self.failure_detection_flag:
+            #     # Use gray_edges directly (from earlier) for contour detection
+            #    if hasattr(self, "gray_edges") and self.gray_edges is not None:
+            #     contours, _ = cv2.findContours(self.gray_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+            #     height, width = processed.shape[:2]
+            #     for c in contours:
+            #         x, y, w, h = cv2.boundingRect(c)
+            #         area = cv2.contourArea(c)
+            #         if h > (height // 2):
+            #             continue
+            #         if area < 150:
+            #             continue
+
+            #         cv2.rectangle(processed, (x, y), (x + w, y + h), (0, 0, 255), 1)
+            #         cv2.drawContours(processed, [c], -1, (0, 255, 0), 1)
+            
+            if self.failure_detection_flag:
+                if hasattr(self, "gray_edges") and self.gray_edges is not None:
+                    # Apply morphological closing to connect broken edges
+                    kernel = np.ones((3, 3), np.uint8)  # You can tweak this size (e.g., (5,5))
+                    closed_edges = cv2.morphologyEx(self.gray_edges, cv2.MORPH_CLOSE, kernel)
+
+                    # Now use the closed version for contour detection
+                    contours, _ = cv2.findContours(closed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                    height, width = processed.shape[:2]
+                    for c in contours:
+                        x, y, w, h = cv2.boundingRect(c)
+                        area = cv2.contourArea(c)
+                        if h > (height // 2):
+                            continue
+                        if area < 150:
+                            continue
+
+                        cv2.rectangle(processed, (x, y), (x + w, y + h), (0, 0, 255), 1)
+                        cv2.drawContours(processed, [c], -1, (0, 255, 0), 1)
+
+
+            #-------------------------------------------------------------------------------
             
             self.current_frame = frame                # raw video frame
             self.filtered_frame = processed           # final processed frame
@@ -91,33 +137,6 @@ class NoiseReductionApp:
             self.root.after(30, update_frame)
 
         update_frame()
-
-
-
-    # def show_video_stream(self):
-    #     def update_frame():
-    #         ret, frame = self.cap.read()
-    #         if ret:
-    #             #if any if the filters applied
-    #             if self.apply_median:
-    #                 k = self.median_ksize
-    #                 if k % 2 == 0: k += 1
-    #                 frame = cv2.medianBlur(frame, k)
-    #             elif self.apply_gaussian:
-    #                 k = self.gaussian_ksize
-    #                 if k % 2 == 0: k += 1
-    #                 frame = cv2.GaussianBlur(frame, (k, k), self.gaussian_sigmaX)
-    #             elif self.apply_bilateral:
-    #                 d = max(1, self.bilateral_d)
-    #                 frame = cv2.bilateralFilter(frame, d, self.bilateral_sigmaColor, self.bilateral_sigmaSpace)
-    #             elif self.apply_canny and self.canny_detector is not None:
-    #                 frame = self.canny_detector.apply(frame)
-    #                 frame = cv2.canny(frame, cv2.COLOR_GRAY2BGR)  # Convert to BGR to display correctly
-                    
-    #             self.current_frame = frame
-    #             cv2.imshow("Live Stream", frame)
-    #         self.root.after(30, update_frame)
-    #     update_frame()
 
     def capture_current_frame(self):
         if self.cap is not None:
@@ -184,6 +203,10 @@ class NoiseReductionApp:
         self.apply_canny = True
         print("[INFO] Live Canny Edge Detection Enabled.")
             
+        
+        
+    def apply_failure_detection(self):
+        self.failure_detection_flag = True
         
     def extract_images_from_stream(self):
         self.enable_screenshot = True
