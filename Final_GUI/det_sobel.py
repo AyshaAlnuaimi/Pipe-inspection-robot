@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+#https://medium.com/@rajilini/laplacian-of-gaussian-filter-log-for-image-processing-c2d1659d5d2
+
 
 class SobelEdgeDetector:
     def __init__(self):

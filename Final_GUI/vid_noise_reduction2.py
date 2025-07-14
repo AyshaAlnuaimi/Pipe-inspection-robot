@@ -4,11 +4,13 @@ import os
 import numpy as np
 
     
-from det_Canny_edge import CannyEdgeDetector
 from vid_median_fltr import MedianFilterApp
 from vid_gaussian_fltr import GaussianFilterApp
 from vid_bilateral_fltr import BilateralFilterApp
+
+from det_Canny_edge import CannyEdgeDetector
 from det_sobel import SobelEdgeDetector
+from det_Laplacian_of_Gaussian import LoGEdgeDetector
     
     
 class NoiseReductionApp:
@@ -27,11 +29,17 @@ class NoiseReductionApp:
         self.bilateral_sigmaColor = 50
         self.bilateral_sigmaSpace = 50
         
+        #Canny edge detection flags
         self.apply_canny = False
         self.canny_detector = None
         
+        #Sobel edge detection flags
         self.apply_sobel = False
         self.sobel_detector = None
+        
+        #LoG edge detection flags
+        self.apply_log = False
+        self.log_detector = None
         
         self.enable_screenshot = False
         self.screenshot_count = 0
@@ -79,8 +87,13 @@ class NoiseReductionApp:
                 # processed = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
                 
             # Apply Sobel edge if enabled
-            elif self.apply_sobel and self.sobel_detector is not None:
+            if self.apply_sobel and self.sobel_detector is not None:
                 self.gray_edges = self.sobel_detector.apply(processed)
+                processed = cv2.cvtColor(self.gray_edges, cv2.COLOR_GRAY2BGR)
+        
+            # Apply LoG edge 
+            if self.apply_log and self.log_detector is not None:
+                self.gray_edges = self.log_detector.apply(processed)
                 processed = cv2.cvtColor(self.gray_edges, cv2.COLOR_GRAY2BGR)
                         
                 
@@ -98,44 +111,48 @@ class NoiseReductionApp:
                     print(" Done saving 20 screenshots.")
             
             
-            #-------------------------------------------------------------------        
             # if self.failure_detection_flag:
-            #     # Use gray_edges directly (from earlier) for contour detection
-            #    if hasattr(self, "gray_edges") and self.gray_edges is not None:
-            #     contours, _ = cv2.findContours(self.gray_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            #     if hasattr(self, "gray_edges") and self.gray_edges is not None:
+            #         # Apply morphological closing to connect broken edges
+            #         kernel = np.ones((3, 3), np.uint8)  # You can tweak this size (e.g., (5,5))
+            #         closed_edges = cv2.morphologyEx(self.gray_edges, cv2.MORPH_CLOSE, kernel)
 
-            #     height, width = processed.shape[:2]
-            #     for c in contours:
-            #         x, y, w, h = cv2.boundingRect(c)
-            #         area = cv2.contourArea(c)
-            #         if h > (height // 2):
-            #             continue
-            #         if area < 150:
-            #             continue
+            #         # Now use the closed version for contour detection
+            #         contours, _ = cv2.findContours(closed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            #         cv2.rectangle(processed, (x, y), (x + w, y + h), (0, 0, 255), 1)
-            #         cv2.drawContours(processed, [c], -1, (0, 255, 0), 1)
+            #         height, width = processed.shape[:2]
+            #         for c in contours:
+            #             x, y, w, h = cv2.boundingRect(c)
+            #             area = cv2.contourArea(c)
+            #             if h > (height // 2):
+            #                 continue
+            #             if area < 150:
+            #                 continue
+
+            #             cv2.rectangle(processed, (x, y), (x + w, y + h), (0, 0, 255), 1)
+            #             cv2.drawContours(processed, [c], -1, (0, 255, 0), 1)
+            
             
             if self.failure_detection_flag:
                 if hasattr(self, "gray_edges") and self.gray_edges is not None:
-                    # Apply morphological closing to connect broken edges
-                    kernel = np.ones((3, 3), np.uint8)  # You can tweak this size (e.g., (5,5))
-                    closed_edges = cv2.morphologyEx(self.gray_edges, cv2.MORPH_CLOSE, kernel)
+                    # Binarize Sobel (or other) edge map
+                    _, binary_edges = cv2.threshold(self.gray_edges, 50, 255, cv2.THRESH_BINARY)
 
-                    # Now use the closed version for contour detection
+                    # Apply morphological closing
+                    kernel = np.ones((3, 3), np.uint8)
+                    closed_edges = cv2.morphologyEx(binary_edges, cv2.MORPH_CLOSE, kernel)
+
                     contours, _ = cv2.findContours(closed_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
                     height, width = processed.shape[:2]
                     for c in contours:
                         x, y, w, h = cv2.boundingRect(c)
                         area = cv2.contourArea(c)
-                        if h > (height // 2):
+                        if h > (height // 2) or area < 150:
                             continue
-                        if area < 150:
-                            continue
-
                         cv2.rectangle(processed, (x, y), (x + w, y + h), (0, 0, 255), 1)
                         cv2.drawContours(processed, [c], -1, (0, 255, 0), 1)
+
 
 
             #-------------------------------------------------------------------------------
@@ -164,6 +181,12 @@ class NoiseReductionApp:
         self.apply_canny = False
         self.canny_detector = None
         self.screenshot = False
+        # Sobel edge detection flags
+        self.apply_sobel = False
+        self.sobel_detector = None
+        # LoG edge detection flags
+        self.apply_log = False
+        self.log_detector = None
         print("[INFO] Reset to original stream (no filters or edge detection).")
 
     def apply_median_filter(self):
@@ -219,6 +242,16 @@ class NoiseReductionApp:
         self.apply_sobel = True
         self.apply_canny = False  # ← Disable Canny when Sobel is selected
         print("[INFO] Live Sobel Edge Detection Enabled.")
+
+    
+    def apply_log_edge(self):
+        #https://medium.com/@rajilini/laplacian-of-gaussian-filter-log-for-image-processing-c2d1659d5d2
+        if self.log_detector is None:
+            self.log_detector = LoGEdgeDetector()
+        self.apply_log = True
+        self.apply_canny = False
+        self.apply_sobel = False
+        print("[INFO] Live LoG Edge Detection Enabled.")
 
         
     def apply_failure_detection(self):

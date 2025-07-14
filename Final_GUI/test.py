@@ -2,7 +2,7 @@ import tkinter as tk
 import cv2
     
     
-from vid_noise_reduction import NoiseReductionApp
+from vid_noise_reduction2 import NoiseReductionApp
 
     
 class GUI:
@@ -56,6 +56,9 @@ class GUI:
 
         # tk.Button(self.main_menu, text="Canny edge detection", command=self.logic.apply_canny_edge).pack()
         tk.Button(self.main_menu, text="Canny edge detection",  command=self.logic.apply_canny_edge).pack()
+        tk.Button(self.main_menu, text="Sobel edge detection",  command=self.logic.apply_sobel_edge).pack()
+        tk.Button(self.main_menu, text="LoG edge detection",  command=self.logic.apply_log_edge).pack()
+
         # tk.Button(self.main_menu, text="Laplacian edge detection").pack()
         # tk.Button(self.main_menu, text="Sobel edge detection").pack()
         tk.Button(self.main_menu, text="Back", command=self.filter_menu).pack()
