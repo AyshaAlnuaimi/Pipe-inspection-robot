@@ -88,7 +88,7 @@ class NoiseReductionApp:
         self.apply_bilateral = False
         self.apply_canny = False
         self.canny_detector = None
-        print("[INFO] Reset to original stream (no filters or edge detection).")
+        print(" Reset to original stream (no filters or edge detection).")
 
     def apply_median_filter(self):
         self.capture_current_frame()
@@ -98,9 +98,9 @@ class NoiseReductionApp:
             cv2.imwrite(self.current_image_path, app.filtered_image)
             self.apply_median = True
             self.median_ksize = app.ksize
-            print(f"[INFO] Applied Median Filter with ksize={app.ksize}")
+            print(f" Applied Median Filter with ksize={app.ksize}")
         else:
-            print("[INFO] Filter discarded.")
+            print(" Filter discarded.")
 
     def apply_gaussian_filter(self):
         self.capture_current_frame()
@@ -111,9 +111,9 @@ class NoiseReductionApp:
             self.apply_gaussian = True
             self.gaussian_ksize = app.ksize
             self.gaussian_sigmaX = app.sigmaX
-            print(f"[INFO] Applied Gaussian Filter with ksize={app.ksize}, sigmaX={app.sigmaX}")
+            print(f" Applied Gaussian Filter with ksize={app.ksize}, sigmaX={app.sigmaX}")
         else:
-            print("[INFO] Gaussian filter not applied.")
+            print(" Gaussian filter not applied.")
 
     def apply_bilateral_filter(self):
         self.capture_current_frame()
@@ -127,12 +127,12 @@ class NoiseReductionApp:
             self.bilateral_d = app.d
             self.bilateral_sigmaColor = app.sigmaColor
             self.bilateral_sigmaSpace = app.sigmaSpace
-            print(f"[INFO] Applied Bilateral Filter (d={app.d}, sigmaColor={app.sigmaColor}, sigmaSpace={app.sigmaSpace})")
+            print(f" Applied Bilateral Filter (d={app.d}, sigmaColor={app.sigmaColor}, sigmaSpace={app.sigmaSpace})")
         else:
-            print("[INFO] Bilateral filter not applied.")
+            print(" Bilateral filter not applied.")
 
     def skip_processing(self):
-        print("[INFO] Skipping noise reduction. Enabling Canny Edge Detection...")
+        print(" Skipping noise reduction. Enabling Canny Edge Detection...")
         self.apply_canny = True
         self.canny_detector = CannyEdgeDetector()
 

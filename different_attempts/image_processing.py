@@ -3,7 +3,7 @@ import cv2
 # Load image
 image = cv2.imread("camera_reading/photo_1.jpg")
 if image is None:
-    print("❌ Failed to load image.")
+    print("Failed to load image.")
     exit()
 
 # Convert to grayscale first

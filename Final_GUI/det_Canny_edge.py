@@ -7,7 +7,7 @@ class CannyEdgeDetector:
         self.trackbar_window = "Canny Trackbars"
 
         cv2.namedWindow(self.trackbar_window, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.trackbar_window, 400, 100)
+        cv2.resizeWindow(self.trackbar_window, 600, 100)
         cv2.createTrackbar("Low Threshold", self.trackbar_window, self.low_threshold, 255, lambda x: None)
         cv2.createTrackbar("High Threshold", self.trackbar_window, self.high_threshold, 255, lambda x: None)
 

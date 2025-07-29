@@ -30,20 +30,20 @@ class MedianFilterApp:
         cv2.imshow(self.display_window, self.filtered_image)
 
     def run(self):
-        print("[INFO] Press 's' to save, or 'i' to ignore the filter.")
+        print(" Press 's' to save, or 'i' to ignore the filter.")
         while True:
             key = cv2.waitKey(100) & 0xFF
             if key == ord('s'):
-                print(f"[INFO] Filter saved with ksize={self.ksize}")
+                print(f" Filter saved with ksize={self.ksize}")
                 self.save_filter = True
                 break
             elif key == ord('i'):
-                print("[INFO] Filter ignored.")
+                print(" Filter ignored.")
                 self.filtered_image = None
                 self.save_filter = False
                 break
             if cv2.getWindowProperty(self.trackbar_window, cv2.WND_PROP_VISIBLE) < 1:
-                print("[INFO] Window closed without choice. Ignoring.")
+                print(" Window closed without choice. Ignoring.")
                 self.filtered_image = None
                 self.save_filter = False
                 break
